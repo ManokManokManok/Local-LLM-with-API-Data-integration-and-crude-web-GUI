@@ -1,0 +1,148 @@
+<!-- Disclaimer. Made with help of AI kasi tamad ako hehe-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gemma Chat</title>
+  <style>
+    
+  body {
+    font-family: Arial, sans-serif;
+    background: #f6f8fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .chat-box {
+    flex: 1;
+    background-color: rgb(146, 143, 143);
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    margin-left: 25%;
+    margin-right: 25%;
+  }
+
+  .message {
+    display: flex;
+    margin-bottom: 10px;
+    max-width: 70%;
+    margin-right: 10%;
+  }
+
+  .user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+
+  .gemma {
+    align-self: flex-start;
+    margin-left: 10%;
+  }
+
+  .bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    word-wrap: break-word;
+    display: inline-block;
+    background-color: #dcf8c6;
+  }
+
+  .user .bubble {
+    background-color: #aee1f9;
+  }
+
+  .label {
+    font-size: 0.8em;
+    color: #555;
+    margin: 0 5px;
+    align-self: flex-end;
+  }
+
+  .input-area {
+    display: flex;
+    padding: 30px;
+    background-color: #444040;
+    border-top: 1px solid #ddd;
+    margin-left: 25%;
+    margin-right: 25%;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+  }
+
+  button {
+    padding: 10px 20px;
+    margin-left: 10px;
+    border: none;
+    background-color: #0e82b8;
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="chat-box" id="chatBox"></div>
+
+<div class="input-area">
+  <input type="text" id="userInput" placeholder="Type a message..." />
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+  async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const chatBox = document.getElementById("chatBox");
+    const message = input.value.trim();
+    if (!message) return;
+
+    // Show user's message
+    const userMsg = document.createElement("div");
+    userMsg.className = "message user";
+    userMsg.innerHTML = `<span class="label">user:</span><div class="bubble">${message}</div>`;
+    chatBox.appendChild(userMsg);
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Send to backend
+    const res = await fetch("http://localhost:5000/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+    const reply = data.reply || "Deepseek had no response.";
+
+    // Show Gemma's response
+    const botMsg = document.createElement("div");
+    botMsg.className = "message Deepseek";
+    botMsg.innerHTML = `<span class="label">DeepSeek:</span><div class="bubble">${reply.replace(/\n/g, "<br>")}</div>`;
+    chatBox.appendChild(botMsg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+</script>
+<script>
+  document.getElementById("userInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // prevent newline
+      sendMessage();
+    }
+  });
+</script>
+
+</body>
+</html>
